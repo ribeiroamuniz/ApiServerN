@@ -4,9 +4,11 @@ const mysql = require('mysql');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const app = express();
+const cors = require('cors');
 const port = 3000; // Usando uma porta única para o servidor
 
 app.use(express.json());
+app.use(cors());
 
 // Configuração do banco de dados
 const connection = mysql.createConnection({
@@ -34,10 +36,25 @@ app.post('/locations', async (req, res) => {
   const { latitude, longitude } = req.body;
   
   try {
-    // Enviar dados GPS para o servidor backend
-    await axios.post('https://apiservern.onrender.com/api/location', { latitude, longitude });
-    res.json({ status: 'Dados enviados com sucesso' });
+    // Agora estamos apenas processando os dados localmente
+    // Você pode salvar esses dados no banco ou realizar alguma ação adicional
+    console.log(`Recebido dados GPS: Latitude = ${latitude}, Longitude = ${longitude}`);
+    
+    // Se precisar salvar esses dados no banco de dados, adicione aqui
+    connection.query(
+      'INSERT INTO location (latitude, longitude) VALUES (?, ?)',
+      [latitude, longitude],
+      (error, results) => {
+        if (error) {
+          console.error('Erro ao salvar dados no banco:', error);
+          return res.status(500).json({ error: 'Erro ao salvar dados.' });
+        }
+        res.json({ status: 'Dados GPS salvos com sucesso' });
+      }
+    );
+    
   } catch (error) {
+    console.error('Erro ao processar dados GPS:', error);
     res.status(500).json({ error: error.message });
   }
 });
