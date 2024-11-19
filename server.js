@@ -1,9 +1,10 @@
 const express = require('express');
+const axios = require('axios');
 const mysql = require('mysql');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const app = express();
-const port = 3001;
+const port = 3000; // Usando uma porta única para o servidor
 
 app.use(express.json());
 
@@ -13,10 +14,9 @@ const connection = mysql.createConnection({
   user: 'infocimol28',
   password: 'angelo1',
   database: 'infocimol28',
-  
 });
 
-connection.connect(err => {
+connection.connect((err) => {
   if (err) {
     console.error('Erro ao conectar ao banco de dados:', err);
     return;
@@ -24,9 +24,22 @@ connection.connect(err => {
   console.log('Conectado ao banco de dados.');
 });
 
-// Endpoint de teste para a raiz
+// Rota de teste para verificar se o servidor está funcionando
 app.get('/', (req, res) => {
-  res.send('Servidor funcionando corretamente.');
+  res.send('API integrada (GPS e Backend) está funcionando!');
+});
+
+// Endpoint para enviar dados GPS
+app.post('/locations', async (req, res) => {
+  const { latitude, longitude } = req.body;
+  
+  try {
+    // Enviar dados GPS para o servidor backend
+    await axios.post('https://apiservern.onrender.com/api/location', { latitude, longitude });
+    res.json({ status: 'Dados enviados com sucesso' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Endpoint de cadastro de usuário
@@ -88,6 +101,7 @@ app.post('/api/login', (req, res) => {
   });
 });
 
+// Iniciar o servidor
 app.listen(port, () => {
-  console.log(`Backend rodando na porta ${port}`);
+  console.log(`Servidor rodando na porta ${port}`);
 });
